@@ -14,6 +14,7 @@ use App\Helpers\DataHelper;
 use App\Helpers\LogHelper;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use DB;
 use Validator;
 
@@ -170,17 +171,19 @@ class NotificationController extends Controller
             $message = 'Pemberitahuan! Part Request dengan nomor ' . $part_req_number . ', telah di approve, mohon untuk segera periksa. Terimakasih. Akses disini : https://inventory.suaisystem.com';
             $token = 'xT-cKdExR44PbctH-8LY';
 
-            foreach ($targetNumbers as $number) {
-                $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-                    'target' => $number,
+            try {
+                $target = implode(',', $targetNumbers);
+                $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                    'target' => $target,
                     'message' => $message,
                     'token' => $token,
                 ]);
 
                 if ($whatsappResponse->failed()) {
-                    // Tangani jika pengiriman gagal
-                    Log::error('Gagal mengirim pesan ke nomor ' . $number . ': ' . $whatsappResponse->body());
+                    Log::error('Gagal mengirim pesan WA Fonnte: ' . $whatsappResponse->body());
                 }
+            } catch (\Throwable $e) {
+                Log::error('Error / Timeout mengirim pesan WA Fonnte: ' . $e->getMessage());
             }
         }
 

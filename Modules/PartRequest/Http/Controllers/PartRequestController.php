@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -237,17 +238,19 @@ class PartRequestController extends Controller
         $message = 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini : https://inventory.suaisystem.com';
         $token = 'xT-cKdExR44PbctH-8LY';
 
-        foreach ($targetNumbers as $number) {
-            $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-                'target' => $number,
+        try {
+            $target = implode(',', $targetNumbers);
+            $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                'target' => $target,
                 'message' => $message,
                 'token' => $token,
             ]);
 
             if ($whatsappResponse->failed()) {
-                // Tangani jika pengiriman gagal
-                Log::error('Gagal mengirim pesan ke nomor ' . $number . ': ' . $whatsappResponse->body());
+                Log::error('Gagal mengirim pesan WA Fonnte (spstore): ' . $whatsappResponse->body());
             }
+        } catch (\Throwable $e) {
+            Log::error('Error / Timeout mengirim pesan WA Fonnte (spstore): ' . $e->getMessage());
         }
 
         return redirect('partrequest/sp')->with('message', 'PartRequest berhasil ditambahkan');
@@ -277,11 +280,19 @@ class PartRequestController extends Controller
 
         $part_req_number = '...'; // Provide the actual part request number
 
-        $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-            'target' => $target,
-            'message' => 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini: https://inventory.suaisystem.com',
-            'token' => 'xT-cKdExR44PbctH-8LY',
-        ]);
+        try {
+            $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                'target' => $target,
+                'message' => 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini: https://inventory.suaisystem.com',
+                'token' => 'xT-cKdExR44PbctH-8LY',
+            ]);
+
+            if ($whatsappResponse->failed()) {
+                Log::error('Gagal mengirim pesan WA Fonnte (SendWA): ' . $whatsappResponse->body());
+            }
+        } catch (\Throwable $e) {
+            Log::error('Error / Timeout mengirim pesan WA Fonnte (SendWA): ' . $e->getMessage());
+        }
         return redirect('partrequest/sp')->with('message', 'PartRequest berhasil ditambahkan');
     }
 
@@ -645,17 +656,19 @@ class PartRequestController extends Controller
         $message = 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini : https://inventory.suaisystem.com';
         $token = 'xT-cKdExR44PbctH-8LY';
 
-        foreach ($targetNumbers as $number) {
-            $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-                'target' => $number,
+        try {
+            $target = implode(',', $targetNumbers);
+            $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                'target' => $target,
                 'message' => $message,
                 'token' => $token,
             ]);
 
             if ($whatsappResponse->failed()) {
-                // Tangani jika pengiriman gagal
-                Log::error('Gagal mengirim pesan ke nomor ' . $number . ': ' . $whatsappResponse->body());
+                Log::error('Gagal mengirim pesan WA Fonnte (cdstore): ' . $whatsappResponse->body());
             }
+        } catch (\Throwable $e) {
+            Log::error('Error / Timeout mengirim pesan WA Fonnte (cdstore): ' . $e->getMessage());
         }
 
         return redirect('partrequest/cd')->with('message', 'PartRequest berhasil ditambahkan');
@@ -1058,17 +1071,19 @@ class PartRequestController extends Controller
         $message = 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini : https://inventory.suaisystem.com';
         $token = 'xT-cKdExR44PbctH-8LY';
 
-        foreach ($targetNumbers as $number) {
-            $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-                'target' => $number,
+        try {
+            $target = implode(',', $targetNumbers);
+            $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                'target' => $target,
                 'message' => $message,
                 'token' => $token,
             ]);
 
             if ($whatsappResponse->failed()) {
-                // Tangani jika pengiriman gagal
-                Log::error('Gagal mengirim pesan ke nomor ' . $number . ': ' . $whatsappResponse->body());
+                Log::error('Gagal mengirim pesan WA Fonnte (afstore): ' . $whatsappResponse->body());
             }
+        } catch (\Throwable $e) {
+            Log::error('Error / Timeout mengirim pesan WA Fonnte (afstore): ' . $e->getMessage());
         }
 
         return redirect('partrequest/af')->with('message', 'PartRequest berhasil ditambahkan');
@@ -1400,17 +1415,19 @@ class PartRequestController extends Controller
         $message = 'Pemberitahuan! Ada Part Request masuk dengan nomor ' . $part_req_number . ', mohon untuk segera periksa. Terimakasih. Akses disini : https://inventory.suaisystem.com';
         $token = 'xT-cKdExR44PbctH-8LY';
 
-        foreach ($targetNumbers as $number) {
-            $whatsappResponse = Http::get('https://api.fonnte.com/send', [
-                'target' => $number,
+        try {
+            $target = implode(',', $targetNumbers);
+            $whatsappResponse = Http::timeout(5)->get('https://api.fonnte.com/send', [
+                'target' => $target,
                 'message' => $message,
                 'token' => $token,
             ]);
 
             if ($whatsappResponse->failed()) {
-                // Tangani jika pengiriman gagal
-                Log::error('Gagal mengirim pesan ke nomor ' . $number . ': ' . $whatsappResponse->body());
+                Log::error('Gagal mengirim pesan WA Fonnte (cfstore): ' . $whatsappResponse->body());
             }
+        } catch (\Throwable $e) {
+            Log::error('Error / Timeout mengirim pesan WA Fonnte (cfstore): ' . $e->getMessage());
         }
 
         return redirect('partrequest/cf')->with('message', 'PartRequest berhasil ditambahkan');
@@ -1468,7 +1485,6 @@ class PartRequestController extends Controller
                 ->withErrors($validator)
                 ->withInput();
         }
-        dd($request->all());
 
         DB::beginTransaction();
 
