@@ -6,6 +6,7 @@
     "SysRole": true,
     "SysModule": true,
     "Dashboard": true,
+    "Configuration": true,
     "Page": true,
     "VisiMisi": true,
     "Faqs": true,

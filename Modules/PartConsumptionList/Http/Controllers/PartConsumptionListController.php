@@ -70,7 +70,7 @@ class PartConsumptionListController extends Controller
         }
 
         $partconsumptionlists = $this->partConsumptionListRepository->getAll();
-        $parts = $this->partRepository->getAll();
+        $parts = collect([]);
         $carlines = $this->carlineRepository->getAll();
         $machines = $this->machineRepository->getAll();
         $carnames = $this->carnameRepository->getAll();

@@ -16,3 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+LAPORAN_AUDIT_DAN_OPTIMASI_TEKNIS.md
+LAPORAN_AUDIT_DAN_OPTIMASI_TEKNIS.docx
+*.docx
+*.md

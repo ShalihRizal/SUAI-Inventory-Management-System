@@ -53,7 +53,7 @@ class StockOpnameController extends Controller
         $noCount  = DB::table('part')->where('has_sto', 'no')->sum('qty_end');
 
         $partcategories = $this->_partCategoryRepository->getAll();
-        $stockopnames   = $this->_stockopnameRepository->getAll();
+        $stockopnames   = collect([]);
 
         $data   = [];
         $labels = [];
@@ -75,7 +75,7 @@ class StockOpnameController extends Controller
         $partcategories = $this->_partCategoryRepository->getAll();
         $parts          = $this->_partRepository->getAllByParams($params);
         $racks          = $this->_rackRepository->getAll();
-        $stockopnames   = $this->_stockopnameRepository->getAll();
+        $stockopnames   = collect([]);
         $crimpingdies   = $this->_partRepository->getAllByParamsPaginatedKategori($params, 10);
 
         $data   = [];
@@ -98,7 +98,7 @@ class StockOpnameController extends Controller
         $partcategories = $this->_partCategoryRepository->getAll();
         $parts          = $this->_partRepository->getAllByParams($params);
         $racks          = $this->_rackRepository->getAll();
-        $stockopnames   = $this->_stockopnameRepository->getAll();
+        $stockopnames   = collect([]);
         $crimpingdies   = $this->_partRepository->getAllByParamsPaginatedKategori($params, 10);
 
         $data   = [];
@@ -121,7 +121,7 @@ class StockOpnameController extends Controller
         $partcategories = $this->_partCategoryRepository->getAll();
         $parts          = $this->_partRepository->getAllByParams($params);
         $racks          = $this->_rackRepository->getAll();
-        $stockopnames   = $this->_stockopnameRepository->getAll();
+        $stockopnames   = collect([]);
         $crimpingdies   = $this->_partRepository->getAllByParamsPaginatedKategori($params, 10);
 
         $data   = [];
@@ -144,7 +144,7 @@ class StockOpnameController extends Controller
         $partcategories = $this->_partCategoryRepository->getAll();
         $parts          = $this->_partRepository->getAllByParams($params);
         $racks          = $this->_rackRepository->getAll();
-        $stockopnames   = $this->_stockopnameRepository->getAll();
+        $stockopnames   = collect([]);
         $crimpingdies   = $this->_partRepository->getAllByParamsPaginatedKategori($params, 10);
 
         $data   = [];

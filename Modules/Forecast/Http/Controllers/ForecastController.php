@@ -46,7 +46,7 @@ class ForecastController extends Controller
             return redirect('unauthorize');
         }
 
-        $forecasts = $this->_forecastRepository->getAll();
+        $forecasts = collect([]);
         $partcategories = $this->_partCategoryRepository->getAll();
         $parts = $this->_partRepository->getAll();
         $carlinecategories = $this->_CarlineCategoryRepository->getAll();

@@ -15,7 +15,7 @@ use Modules\Part\Repositories\PartRepository;
 use Modules\SysLog\Repositories\SysLogRepository;
 use App\Helpers\DataHelper;
 use App\Helpers\LogHelper;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Validator;
 
 class DashboardController extends Controller
@@ -35,65 +35,25 @@ class DashboardController extends Controller
      */
     public function index()
     {
-
         $partcategories = $this->_partCategoryRepository->getAll();
-        $allParts = $this->_partRepository->getAll();
         $logs = $this->_logRepository->paginate(10);
 
+        $thisMonthStart = Carbon::now()->startOfMonth()->toDateTimeString();
+        $thisMonthEnd = Carbon::now()->endOfMonth()->toDateTimeString();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth()->toDateTimeString();
 
-
-        $thisMonthStart = Carbon::now()->startOfMonth();
-        $thisMonthEnd = Carbon::now()->endOfMonth();
-        $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
-        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
-        // dd($lastMonthStart);
-
-        // Filter parts by created_by for this month
-        $thisMonthParts = $allParts->whereBetween('updated_at', [$thisMonthStart, $thisMonthEnd]);
-
-        // Filter parts by created_by for last month
-        $lastMonthParts = $allParts->where('updated_at', '<=', $lastMonthEnd);
-        //    dd($lastMonthParts);
-
-
-        $data = [];
-
-        foreach ($partcategories as $partcategory) {
-            $data[$partcategory->part_category_id]['label'] = $partcategory->part_category_name;
-
-            // Filter parts by part_category_id
-            $thisMonthPartsByCategory = $thisMonthParts->where('part_category_id', $partcategory->part_category_id);
-            $lastMonthPartsByCategory = $lastMonthParts->where('part_category_id', $partcategory->part_category_id);
-
-            $thisMonthSum = [];
-            $thisMonthAmountSum = [];
-            $lastMonthSum = [];
-            $lastMonthAmountSum = [];
-            $data[$partcategory->part_category_id]['label'] = $partcategory->part_category_name;
-            $sum = [];
-
-            foreach ($allParts as $part) {
-                if (intval($part->part_category_id) == intval($partcategory->part_category_id)) {
-                    $sum[] = intval($part->qty_end);
-                }
-            }
-            $data[$partcategory->part_category_id]['qty'] = $this->array_multisum($sum);
-
-            foreach ($thisMonthPartsByCategory as $part) {
-                $thisMonthSum[] = intval($part->qty_end);
-                $thisMonthAmountSum[] = intval($part->qty_end) * floatval($part->price);
-            }
-
-            foreach ($lastMonthPartsByCategory as $part) {
-                $lastMonthSum[] = intval($part->qty_end); // Accumulate qty_end for last month
-                $lastMonthAmountSum[] = intval($part->qty_end) * floatval($part->price); // Calculate amount for last month
-            }
-
-            $data[$partcategory->part_category_id]['this_month_qty'] = $this->array_multisum($thisMonthSum);
-            $data[$partcategory->part_category_id]['this_month_amount'] = $this->array_multisum($thisMonthAmountSum);
-            $data[$partcategory->part_category_id]['last_month_qty'] = $this->array_multisum($lastMonthSum);
-            $data[$partcategory->part_category_id]['last_month_amount'] = $this->array_multisum($lastMonthAmountSum);
-        }
+        $stats = DB::table('part')
+            ->select(
+                'part_category_id',
+                DB::raw('COALESCE(SUM(CAST(qty_end AS SIGNED)), 0) as total_qty'),
+                DB::raw("COALESCE(SUM(CASE WHEN updated_at BETWEEN '{$thisMonthStart}' AND '{$thisMonthEnd}' THEN CAST(qty_end AS SIGNED) ELSE 0 END), 0) as this_month_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN updated_at BETWEEN '{$thisMonthStart}' AND '{$thisMonthEnd}' THEN CAST(qty_end AS SIGNED) * CAST(price AS DECIMAL(15,2)) ELSE 0 END), 0) as this_month_amount"),
+                DB::raw("COALESCE(SUM(CASE WHEN updated_at <= '{$lastMonthEnd}' THEN CAST(qty_end AS SIGNED) ELSE 0 END), 0) as last_month_qty"),
+                DB::raw("COALESCE(SUM(CASE WHEN updated_at <= '{$lastMonthEnd}' THEN CAST(qty_end AS SIGNED) * CAST(price AS DECIMAL(15,2)) ELSE 0 END), 0) as last_month_amount")
+            )
+            ->groupBy('part_category_id')
+            ->get()
+            ->keyBy('part_category_id');
 
         $labels = [];
         $qty = [];
@@ -102,21 +62,19 @@ class DashboardController extends Controller
         $thsamounts = [];
         $lstamounts = [];
 
-        foreach ($data as $partCategoryId => $partCategoryData) {
-            $label = $partCategoryData['label'];
-            $quantity = $partCategoryData['qty'];
-            $thisquantity = $partCategoryData['this_month_qty'];
-            $lastquantity = $partCategoryData['last_month_qty'];
-            $thisamount = $partCategoryData['this_month_amount'];
-            $lastamount = $partCategoryData['last_month_amount'];
+        foreach ($partcategories as $partcategory) {
+            $catId = $partcategory->part_category_id;
+            $stat = $stats->get($catId);
 
-            $labels[$partCategoryId] = $label;
-            $qty[$partCategoryId] = $quantity;
-            $thsqty[$partCategoryId] = $thisquantity;
-            $lstqty[$partCategoryId] = $lastquantity;
-            $thsamounts[$partCategoryId] = $thisamount;
-            $lstamounts[$partCategoryId] = $lastamount;
+            $labels[$catId] = $partcategory->part_category_name;
+            $qty[$catId] = $stat ? floatval($stat->total_qty) : 0;
+            $thsqty[$catId] = $stat ? floatval($stat->this_month_qty) : 0;
+            $lstqty[$catId] = $stat ? floatval($stat->last_month_qty) : 0;
+            $thsamounts[$catId] = $stat ? floatval($stat->this_month_amount) : 0;
+            $lstamounts[$catId] = $stat ? floatval($stat->last_month_amount) : 0;
         }
+
+        $allParts = collect([]);
 
         return view('dashboard::index', compact('partcategories', 'labels', 'thsqty', 'qty', 'lstqty', 'logs', 'allParts', 'thsamounts', 'lstamounts'));
     }
@@ -125,7 +83,7 @@ class DashboardController extends Controller
     {
         $sum = array_sum($arr);
         foreach ($arr as $child) {
-            $sum += is_array($child) ? array_multisum($child) : 0;
+            $sum += is_array($child) ? $this->array_multisum($child) : 0;
         }
         return $sum;
     }
@@ -137,7 +95,25 @@ class DashboardController extends Controller
     public function tv()
     {
         $partcategories = $this->_partCategoryRepository->getAll();
-        $parts = $this->_partRepository->getAll();
+        $parts = DB::table('part')
+            ->join('part_category', 'part.part_category_id', '=', 'part_category.part_category_id')
+            ->select(
+                'part.part_id',
+                'part.part_no',
+                'part.part_name',
+                'part_category.part_category_name',
+                'part.no_urut',
+                'part.qty_end',
+                'part.asal',
+                'part.wear_and_tear_code',
+                'part.invoice',
+                'part.po',
+                'part.po_date',
+                'part.rec_date',
+                'part.used_date'
+            )
+            ->orderBy('part.part_id')
+            ->get();
         return view('dashboard::tv', compact('partcategories', 'parts'));
     }
 
@@ -155,8 +131,6 @@ class DashboardController extends Controller
      */
     public function show($id)
     {
-
-
         return view('dashboard::show');
     }
 
@@ -167,8 +141,6 @@ class DashboardController extends Controller
      */
     public function edit($id)
     {
-
-
         return view('dashboard::edit');
     }
 

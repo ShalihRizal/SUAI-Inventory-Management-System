@@ -49,7 +49,7 @@
 
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="table-data" class="table card-table table-vcenter text-nowrap table-data">
+                    <table id="table-data" class="table card-table table-vcenter text-nowrap">
                         <thead>
                             <tr>
                                 <th width="5%">No</th>
@@ -58,14 +58,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (sizeof($logs) == 0)
+                            @if ($logs->isEmpty())
                             <tr>
                                 <td colspan="3" align="center">Data kosong</td>
                             </tr>
                             @else
-                            @foreach ($logs as $log)
+                            @foreach ($logs as $index => $log)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <td width="5%">{{ $logs->firstItem() + $index }}</td>
                                 <td width="80%">{{ $log->log_description }}</td>
                                 <td width="15%">{{ $log->created_at }}</td>
                             </tr>
@@ -73,6 +73,9 @@
                             @endif
                         </tbody>
                     </table>
+                </div>
+                <div class="d-flex justify-content-end mt-3">
+                    {{ $logs->links() }}
                 </div>
             </div>
         </div>

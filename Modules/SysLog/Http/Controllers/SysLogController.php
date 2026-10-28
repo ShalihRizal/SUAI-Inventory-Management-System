@@ -35,7 +35,7 @@ class SysLogController extends Controller
             return redirect('unauthorize');
         }
 
-        $logs    = $this->_sysLogRepository->getAll();
+        $logs = $this->_sysLogRepository->paginate(25);
 
         return view('syslog::index', compact('logs'));
     }

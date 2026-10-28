@@ -65,11 +65,10 @@ class PartRepository extends QueryBuilderImplementation
             return DB::connection($this->db)
                 ->table($this->table)
                 ->join('part_category', 'part.part_category_id', '=', 'part_category.part_category_id')
-                ->leftJoin('transaksi_in', 'part.part_id', '=', 'transaksi_in.part_id') // Menambahkan left join
-                ->select("part.*", 'part_category.*', 'transaksi_in.qty')
+                ->select("part.*", 'part_category.part_category_name')
                 ->orderBy('part_id')
                 ->get();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
     }

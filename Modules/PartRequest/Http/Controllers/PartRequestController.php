@@ -43,6 +43,11 @@ class PartRequestController extends Controller
         $this->module = "PartRequest";
     }
 
+    public function index(Request $request)
+    {
+        return $this->spindex($request);
+    }
+
     public function spindex(Request $request)
     {
         $params = [
